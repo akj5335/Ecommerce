@@ -121,6 +121,8 @@ function Navbar({ cartCount, onOpenCart, onSearch }) {
         <div className="nav-link cart-trigger" onClick={onOpenCart}>
           Cart ({cartCount})
         </div>
+        <Link to="/wishlist" className="nav-link" style={{ fontSize: '1.2rem', lineHeight: 1 }}>♡</Link>
+        <Link to="/orders" className="nav-link" style={{ fontSize: '1.2rem', lineHeight: 1 }}>📦</Link>
       </div>
     </nav>
   );
@@ -223,9 +225,10 @@ function Footer() {
         <div className="footer-links">
           <h4>ASSISTANCE</h4>
           <ul>
-            <li><Link to="/shipping">Shipping</Link></li>
-            <li><Link to="/returns">Returns</Link></li>
-            <li><Link to="/size-guide">Size Guide</Link></li>
+            <li key="shipping"><Link to="/shipping">Shipping</Link></li>
+            <li key="returns"><Link to="/returns">Returns</Link></li>
+            <li key="size-guide"><Link to="/size-guide">Size Guide</Link></li>
+            <li key="services"><Link to="/services">Our Promises</Link></li>
           </ul>
         </div>
         <div className="footer-links">
@@ -243,30 +246,263 @@ function Footer() {
   );
 }
 
-function USPSection() {
-  const usps = [
-    { title: 'Parisian Design', desc: 'Crafted in the heart of Paris for a unique aesthetic.', icon: '🇫🇷' },
-    { title: 'Performance Built', desc: 'High-tech abrasion-resistant and technical fabrics.', icon: '🛡️' },
-    { title: 'European Quality', desc: 'Small batch production in Portugal for premium results.', icon: '💎' },
-    { title: 'Weather Proof', desc: 'Advanced membranes protecting you from every element.', icon: '⛈️' },
-    { title: 'Shock Absorption', desc: 'Integrated impact protection for high-performance use.', icon: '⚡' },
-    { title: 'Eco-Conscious', desc: 'Sustainable manufacturing and responsibly sourced materials.', icon: '🌱' },
-    { title: 'Global Delivery', desc: 'Specialized worldwide shipping for our global community.', icon: '🚚' },
-    { title: 'Versatile Fit', desc: 'Engineered for seamless movement from road to city.', icon: '🌀' },
+function NewsletterPopup() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const hasSeenNewsletter = sessionStorage.getItem('becane_newsletter_seen');
+      if (!hasSeenNewsletter) {
+        setIsVisible(true);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    sessionStorage.setItem('becane_newsletter_seen', 'true');
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (email) {
+      setSubmitted(true);
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+    }
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="newsletter-popup fade-in-up">
+      <button className="newsletter-close" onClick={handleClose}>✕</button>
+      {!submitted ? (
+        <>
+          <h4>Join the Community</h4>
+          <p>Get exclusive access to new drops and 10% off your first order.</p>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button type="submit" className="btn-discover dark-btn">Sign Up</button>
+          </form>
+        </>
+      ) : (
+        <div className="newsletter-success">
+          <h4>Welcome Aboard!</h4>
+          <p>Check your inbox for your welcome code.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Wishlist({ items, onRemove }) {
+  return (
+    <div className="section container fade-in info-page">
+      <div className="info-wrap">
+        <h1 className="detail-title">My Wishlist</h1>
+        {items.length === 0 ? (
+          <div className="no-results">
+            <div className="no-results-icon">♡</div>
+            <p>Your wishlist is empty.</p>
+            <Link to="/" className="btn-discover">Explore Collection</Link>
+          </div>
+        ) : (
+          <div className="product-grid">
+            {items.map(product => (
+              <div key={product.id} className="product-card fade-in">
+                <Link to={`/product/${product.id}`} className="product-image">
+                  <ProductImage src={product.image} alt={product.name} />
+                </Link>
+                <div className="product-info">
+                  <div>
+                    <p className="product-category">{product.category}</p>
+                    <h3 className="product-name">{product.name}</h3>
+                  </div>
+                  <button className="remove-btn" onClick={() => onRemove(product.id)} style={{ fontSize: '1.2rem' }}>✕</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProductReviews() {
+  const reviews = [
+    { name: 'Sarah M.', date: 'Oct 12, 2025', rating: 5, comment: 'Absolutely in love with the fit. The protection feels substantial but not bulky. 100% worth the investment.' },
+    { name: 'Elena R.', date: 'Sep 28, 2025', rating: 5, comment: 'Rode 500km in this jacket last weekend. Breathability is unmatched. The design turns heads everywhere.' },
+    { name: 'Claire T.', date: 'Sep 15, 2025', rating: 4, comment: 'Great quality materials. The sizing runs slightly small, glad I used the fit guarantee to swap it.' },
   ];
 
   return (
-    <section className="usp-section container fade-in">
-      <div className="usp-grid">
-        {usps.map((usp, idx) => (
-          <div key={idx} className="usp-item">
-            <div className="usp-icon">{usp.icon}</div>
-            <h3 className="usp-title">{usp.title}</h3>
-            <p className="usp-desc">{usp.desc}</p>
+    <div className="reviews-section fade-in">
+      <h3 className="section-title" style={{ textAlign: 'left', fontSize: '1.5rem', marginBottom: '2rem' }}>Client Reviews (4.8/5)</h3>
+      <div className="reviews-list">
+        {reviews.map((r, i) => (
+          <div key={i} className="review-card">
+            <div className="review-header">
+              <span className="review-stars">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+              <span className="review-meta">{r.name} • {r.date}</span>
+            </div>
+            <p className="review-text">"{r.comment}"</p>
           </div>
         ))}
       </div>
-    </section>
+      <button className="btn-discover dark-btn" style={{ marginTop: '2rem' }}>Read All 48 Reviews</button>
+    </div>
+  );
+}
+
+function InfoModal({ isOpen, title, content, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div className="info-modal-overlay fade-in" onClick={onClose}>
+      <div className="info-modal-card" onClick={e => e.stopPropagation()}>
+        <button className="info-modal-close" onClick={onClose}>✕</button>
+        <h3 className="info-modal-title">{title}</h3>
+        <p className="info-modal-body">{content}</p>
+      </div>
+    </div>
+  );
+}
+
+function TrustBadges() {
+  const badges = [
+    { icon: '🛡️', label: 'Crash Replacement', tooltip: '50% off if damaged in an accident.' },
+    { icon: '📏', label: 'Fit Guarantee', tooltip: 'Free size exchanges until it fits.' },
+    { icon: '♾️', label: 'Lifetime Repair', tooltip: 'Professional repair service available.' },
+  ];
+
+  return (
+    <div className="trust-badges">
+      {badges.map((b, i) => (
+        <div key={i} className="trust-badge" title={b.tooltip}>
+          <span className="trust-badge-icon">{b.icon}</span>
+          <span className="trust-badge-label">{b.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function USPSection() {
+  const [modalInfo, setModalInfo] = useState(null);
+
+  const usps = [
+    { title: 'Perfect Fit', desc: 'Free size exchanges until it fits perfectly.', detailedDesc: 'We know buying gear online can be tricky. That’s why we offer unlimited free size exchanges until you get the perfect fit. We cover the shipping both ways.', icon: '📏' },
+    { title: 'Crash Replacement', desc: '50% off a new item if damaged in an accident.', detailedDesc: 'If you damage your Bécane gear in an accident, send it back to us and we will give you 50% off a replacement. We want you protected, always.', icon: '🛡️' },
+    { title: 'Atelier Repair', desc: 'Professional repair service for wear and tear.', detailedDesc: 'We build products to last a lifetime. If you need a zipper replaced or a seam fixed, our Paris atelier offers repair services to keep your gear on the road.', icon: '♾️' },
+    { title: 'Rider Tested', desc: 'Road-tested for 1000km before release.', detailedDesc: 'Every product is rigorously tested on the road for at least 1000km by real riders before it goes into production.', icon: '🏍️' },
+    { title: 'Parisian Design', desc: 'Crafted in the heart of Paris.', detailedDesc: 'Designed in our Paris studio, blending high fashion heritage with modern technical needs.', icon: '🇫🇷' },
+    { title: 'European Quality', desc: 'Small batch production in Portugal.', detailedDesc: 'We partner with family-owned factories in Portugal known for their exceptional craftsmanship and ethical standards.', icon: '💎' },
+    { title: 'Weather Proof', desc: 'Advanced membranes for all elements.', detailedDesc: 'Our proprietary membranes are waterproof and breathable, keeping you dry in the rain and cool in the heat.', icon: '⛈️' },
+    { title: 'Global Delivery', desc: 'Worldwide shipping available.', detailedDesc: 'We ship to over 50 countries worldwide with tracked, express options.', icon: '🚚' },
+  ];
+
+  return (
+    <>
+      <section className="usp-section container fade-in">
+        <div className="usp-grid">
+          {usps.map((usp, idx) => (
+            <div key={idx} className="usp-item" onClick={() => setModalInfo(usp)}>
+              <div className="usp-icon">{usp.icon}</div>
+              <h3 className="usp-title">{usp.title}</h3>
+              <p className="usp-desc">{usp.desc}</p>
+              <button className="usp-learn-more">Learn More</button>
+            </div>
+          ))}
+        </div>
+      </section>
+      <InfoModal
+        isOpen={!!modalInfo}
+        title={modalInfo?.title}
+        content={modalInfo?.detailedDesc}
+        onClose={() => setModalInfo(null)}
+      />
+    </>
+  );
+}
+
+function RelatedProducts({ currentCategory, currentId }) {
+  const related = products
+    .filter(p => p.category !== currentCategory && p.id !== currentId) // Suggest different categories
+    .slice(0, 3); // Take top 3
+
+  if (related.length === 0) return null;
+
+  return (
+    <div className="section container fade-in" style={{ marginTop: '4rem' }}>
+      <h3 className="section-title" style={{ textAlign: 'left', fontSize: '1.5rem', marginBottom: '2rem' }}>Complete the Look</h3>
+      <div className="product-grid">
+        {related.map(product => (
+          <Link to={`/product/${product.id}`} key={product.id} className="product-card">
+            <div className="product-image">
+              <ProductImage src={product.image} alt={product.name} />
+            </div>
+            <div className="product-info">
+              <div>
+                <p className="product-category">{product.category}</p>
+                <h3 className="product-name">{product.name}</h3>
+              </div>
+              <div className="product-price">₹{product.price.toLocaleString('en-IN')}</div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MyOrders({ orders }) {
+  return (
+    <div className="section container fade-in info-page">
+      <div className="info-wrap">
+        <h1 className="detail-title">My Orders</h1>
+        {orders.length === 0 ? (
+          <div className="no-results">
+            <div className="no-results-icon">📦</div>
+            <p>You haven't placed any orders yet.</p>
+            <Link to="/" className="btn-discover">Start Shopping</Link>
+          </div>
+        ) : (
+          <div className="orders-list">
+            {orders.map((order, i) => (
+              <div key={i} className="order-card">
+                <div className="order-header">
+                  <span className="order-id">Order #{order.id}</span>
+                  <span className="order-date">{new Date(order.date).toLocaleDateString()}</span>
+                </div>
+                <div className="order-items">
+                  {order.items.map((item, j) => (
+                    <div key={j} className="order-item-row">
+                      <span>{item.quantity}x {item.name} ({item.size})</span>
+                      <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="order-footer">
+                  <span>Total</span>
+                  <span className="order-total">₹{order.total.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -274,7 +510,7 @@ function Skeleton({ type }) {
   return <div className={`skeleton ${type}`}></div>;
 }
 
-function Home({ searchResults }) {
+function Home({ searchResults, toggleWishlist, wishlist }) {
   const [filter, setFilter] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const categories = ['All', ...new Set(products.map(p => p.category))];
@@ -352,6 +588,16 @@ function Home({ searchResults }) {
           ) : finalProducts.length > 0 ? (
             finalProducts.map(product => (
               <Link to={`/product/${product.id}`} key={product.id} className="product-card fade-in">
+                <button
+                  className={`wishlist-heart ${wishlist.some(i => i.id === product.id) ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleWishlist(product);
+                  }}
+                >
+                  {wishlist.some(i => i.id === product.id) ? '♥' : '♡'}
+                </button>
                 <div className="product-image">
                   <ProductImage src={product.image} alt={product.name} />
                 </div>
@@ -376,27 +622,32 @@ function Home({ searchResults }) {
       </section>
 
 
-      <section id="stories" className="section container story-section">
-        <div className="fade-in story-content">
-          <h2 className="section-title">OUR STORY</h2>
-          <div className="story-paragraphs">
-            <p className="story-lead">Born on the road. Made for the city.</p>
-            <p>
-              Bécane Paris is a hybrid fashion brand redefining protective wear for women. We design modern essentials that merge technical performance with urban sophistication, created for movement across both city streets and open roads.
-            </p>
-            <p>
-              Each piece is designed by women, for women, with a precise focus on fit, mobility, and understated protection. Our garments integrate flexible materials, reflective elements, and discreet technical inserts — engineered to perform while maintaining a refined, minimal aesthetic.
-            </p>
-            <p>
-              We approach protection differently. Not as an add-on, but as part of the design itself. This philosophy shapes what we call <strong>couture armor</strong> — clothing that supports confidence, safety, and freedom without compromising style.
-            </p>
-            <p>
-              Bécane Paris stands for women who move with intention. Who define their own direction. Who expect performance, elegance, and purpose in everything they wear.
-            </p>
-            <p className="story-motto">No compromise. No concession.</p>
-            <p className="story-founder">— Founded by Akshay Jain</p>
+      <section id="stories" className="section story-parallax-container">
+        <div className="story-parallax-bg" style={{ backgroundImage: `url('/assets/jacket.png')` }}></div>
+        <div className="story-overlay"></div>
+        <div className="container story-content-wrapper fade-in">
+          <div className="story-grid-layout">
+            <div className="story-visual">
+              <div className="story-image-frame">
+                <img src="/assets/denim.png" alt="Bécane Atelier" />
+              </div>
+            </div>
+            <div className="story-text-content">
+              <h2 className="section-title text-left">The Atelier</h2>
+              <p className="story-lead">Born on the road. Made for the city.</p>
+              <p>
+                Bécane Paris is a hybrid fashion brand redefining protective wear for women. We design modern essentials that merge technical performance with urban sophistication.
+              </p>
+              <p>
+                Each piece is <strong>couture armor</strong> — designed by women, for women. We refuse to compromise between safety and style. Our garments integrate flexible materials, reflective elements, and discreet technical inserts.
+              </p>
+              <div className="story-quote">
+                "No compromise. No concession."
+              </div>
+              <p className="story-founder">— Akshay Jain, Founder</p>
+              <a href="#" className="btn-discover dark-btn">Read the Journal</a>
+            </div>
           </div>
-          <a href="#" className="btn-discover" style={{ marginTop: '2rem' }}>Read More</a>
         </div>
       </section>
     </>
@@ -458,23 +709,96 @@ function ProductDetail({ onAddToCart }) {
           >
             Add to Cart
           </button>
+          <TrustBadges />
         </div>
+      </div>
+      <div className="container" style={{ marginTop: '6rem', paddingTop: '4rem', borderTop: '1px solid #eee' }}>
+        <RelatedProducts currentCategory={product.category} currentId={product.id} />
+        <div style={{ margin: '4rem 0', borderTop: '1px solid #eee' }}></div>
+        <ProductReviews />
       </div>
     </div>
   );
 }
 
-function Checkout({ cartItems, clearCart }) {
+const initialFormState = {
+  firstName: '', lastName: '', email: '', address: '', city: '', zip: '',
+  cardNumber: '', expiry: '', cvc: ''
+};
+
+function Checkout({ cartItems, clearCart, onOrderPlaced }) {
   const total = cartItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1=Shipping, 2=Payment, 3=Processing, 4=Success
+  const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const validateShipping = () => {
+    const newErrors = {};
+    if (!formData.firstName) newErrors.firstName = 'First name is required';
+    if (!formData.lastName) newErrors.lastName = 'Last name is required';
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
+    if (!formData.address) newErrors.address = 'Address is required';
+    if (!formData.city) newErrors.city = 'City is required';
+    if (!formData.zip || !/^\d{5,6}$/.test(formData.zip)) newErrors.zip = 'Valid ZIP code required';
+    return newErrors;
+  };
+
+  const validatePayment = () => {
+    const newErrors = {};
+    if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber.replace(/\s/g, ''))) newErrors.cardNumber = 'Valid 16-digit card number required';
+    if (!formData.expiry || !/^\d{2}\/\d{2}$/.test(formData.expiry)) newErrors.expiry = 'MM/YY format required';
+    if (!formData.cvc || !/^\d{3,4}$/.test(formData.cvc)) newErrors.cvc = 'Valid CVC required';
+    return newErrors;
+  };
+
+  const traverseToPayment = (e) => {
     e.preventDefault();
+    const shippingErrors = validateShipping();
+    if (Object.keys(shippingErrors).length > 0) {
+      setErrors(shippingErrors);
+      return;
+    }
+    setErrors({});
     setStep(2);
+    window.scrollTo(0, 0);
+  };
+
+  const handleFinalSubmit = (e) => {
+    e.preventDefault();
+    const paymentErrors = validatePayment();
+    if (Object.keys(paymentErrors).length > 0) {
+      setErrors(paymentErrors);
+      return;
+    }
+
+    setStep(3); // Processing
     setTimeout(() => {
+      const newOrder = {
+        id: Math.floor(100000 + Math.random() * 900000),
+        date: new Date().toISOString(),
+        items: cartItems,
+        total: total,
+        customer: formData
+      };
+
+      const existingOrders = JSON.parse(localStorage.getItem('becane_orders') || '[]');
+      localStorage.setItem('becane_orders', JSON.stringify([newOrder, ...existingOrders]));
+
+      if (onOrderPlaced) onOrderPlaced();
       clearCart();
-    }, 500);
+      setStep(4); // Success
+      window.scrollTo(0, 0);
+    }, 2500);
+  };
+
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   if (cartItems.length === 0 && step === 1) {
@@ -488,55 +812,87 @@ function Checkout({ cartItems, clearCart }) {
 
   return (
     <div className="checkout-page section container fade-in">
-      {step === 1 ? (
+      {step === 3 && (
+        <div className="processing-overlay">
+          <div className="spinner"></div>
+          <h2>Processing Payment...</h2>
+          <p>Please do not close this window.</p>
+        </div>
+      )}
+
+      {step < 4 ? (
         <div className="checkout-container">
           <div className="checkout-form-side">
-            <h1 className="detail-title">Shipping Information</h1>
-            <form className="checkout-form" onSubmit={handleSubmit}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>First Name</label>
-                  <input type="text" required placeholder="Jane" />
+            <h1 className="detail-title">{step === 1 ? 'Shipping Information' : 'Payment Details'}</h1>
+
+            {step === 1 ? (
+              <form className="checkout-form" onSubmit={traverseToPayment}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>First Name</label>
+                    <input name="firstName" value={formData.firstName} onChange={handleChange} type="text" className={errors.firstName ? 'error' : ''} />
+                    {errors.firstName && <span className="error-text">{errors.firstName}</span>}
+                  </div>
+                  <div className="form-group">
+                    <label>Last Name</label>
+                    <input name="lastName" value={formData.lastName} onChange={handleChange} type="text" className={errors.lastName ? 'error' : ''} />
+                    {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+                  </div>
                 </div>
                 <div className="form-group">
-                  <label>Last Name</label>
-                  <input type="text" required placeholder="Doe" />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="jane@example.com"
-                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                  title="Please enter a valid email address."
-                />
-              </div>
-              <div className="form-group">
-                <label>Shipping Address</label>
-                <input type="text" required placeholder="123 Street Name" />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>City</label>
-                  <input type="text" required placeholder="Paris" />
+                  <label>Email Address</label>
+                  <input name="email" value={formData.email} onChange={handleChange} type="email" className={errors.email ? 'error' : ''} />
+                  {errors.email && <span className="error-text">{errors.email}</span>}
                 </div>
                 <div className="form-group">
-                  <label>Zip Code</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="75000"
-                    pattern="^[0-9]{5,6}$"
-                    title="Please enter a valid zip code (5-6 digits)."
-                  />
+                  <label>Shipping Address</label>
+                  <input name="address" value={formData.address} onChange={handleChange} type="text" className={errors.address ? 'error' : ''} />
+                  {errors.address && <span className="error-text">{errors.address}</span>}
                 </div>
-              </div>
-              <button type="submit" className="btn-add-to-cart" style={{ maxWidth: 'none', marginTop: '2rem' }}>
-                Place Order • ₹{total.toLocaleString('en-IN')}
-              </button>
-            </form>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>City</label>
+                    <input name="city" value={formData.city} onChange={handleChange} type="text" className={errors.city ? 'error' : ''} />
+                    {errors.city && <span className="error-text">{errors.city}</span>}
+                  </div>
+                  <div className="form-group">
+                    <label>Zip Code</label>
+                    <input name="zip" value={formData.zip} onChange={handleChange} type="text" className={errors.zip ? 'error' : ''} />
+                    {errors.zip && <span className="error-text">{errors.zip}</span>}
+                  </div>
+                </div>
+                <button type="submit" className="btn-add-to-cart" style={{ maxWidth: 'none', marginTop: '2rem' }}>
+                  Continue to Payment
+                </button>
+              </form>
+            ) : (
+              <form className="checkout-form payment-form" onSubmit={handleFinalSubmit}>
+                <div className="form-group" style={{ position: 'relative' }}>
+                  <label>Card Number</label>
+                  <input name="cardNumber" value={formData.cardNumber} onChange={handleChange} type="text" placeholder="0000 0000 0000 0000" maxLength="19" className={errors.cardNumber ? 'error' : ''} />
+                  <span className="card-icon">💳</span>
+                  {errors.cardNumber && <span className="error-text">{errors.cardNumber}</span>}
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Expiry Date</label>
+                    <input name="expiry" value={formData.expiry} onChange={handleChange} type="text" placeholder="MM/YY" maxLength="5" className={errors.expiry ? 'error' : ''} />
+                    {errors.expiry && <span className="error-text">{errors.expiry}</span>}
+                  </div>
+                  <div className="form-group">
+                    <label>CVC</label>
+                    <input name="cvc" value={formData.cvc} onChange={handleChange} type="text" placeholder="123" maxLength="4" className={errors.cvc ? 'error' : ''} />
+                    {errors.cvc && <span className="error-text">{errors.cvc}</span>}
+                  </div>
+                </div>
+                <div className="form-actions" style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                  <button type="button" onClick={() => setStep(1)} className="btn-discover" style={{ border: '1px solid #ddd' }}>Back</button>
+                  <button type="submit" className="btn-add-to-cart" style={{ maxWidth: 'none', flex: 1 }}>
+                    Pay ₹{total.toLocaleString('en-IN')}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
           <div className="checkout-summary-side">
             <h2>Order Summary</h2>
@@ -559,8 +915,8 @@ function Checkout({ cartItems, clearCart }) {
           <div style={{ fontSize: '5rem', marginBottom: '2rem' }}>📦</div>
           <h1 className="detail-title">Order Confirmed</h1>
           <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>
-            Thank you for your order. We've sent a confirmation email to you. <br />
-            Your order is being prepared for delivery.
+            Thank you for your order, {formData.firstName}. <br />
+            We have sent a confirmation email to <strong>{formData.email}</strong>.
           </p>
           <button onClick={() => navigate('/')} className="btn-discover">Back to Collection</button>
         </div>
@@ -640,6 +996,32 @@ function SizeGuide() {
   );
 }
 
+function Services() {
+  const services = [
+    { title: 'Perfect Fit Guarantee', icon: '📏', desc: 'We know buying gear online can be tricky. That’s why we offer unlimited free size exchanges until you get the perfect fit. We cover the shipping both ways.' },
+    { title: 'Crash Replacement', icon: '🛡️', desc: 'If you damage your Bécane gear in an accident, send it back to us and we will give you 50% off a replacement. We want you protected, always.' },
+    { title: 'Atelier Repair Service', icon: '♾️', desc: 'We build products to last a lifetime. If you need a zipper replaced or a seam fixed, our Paris atelier offers repair services to keep your gear on the road.' },
+    { title: 'Rider Tested', icon: '🏍️', desc: 'Every product is rigorously tested on the road for at least 1000km by real riders before it goes into production.' },
+  ];
+
+  return (
+    <div className="section container fade-in info-page">
+      <div className="info-wrap">
+        <h1 className="detail-title">Our Promises</h1>
+        <div className="services-grid">
+          {services.map((s, i) => (
+            <div key={i} className="service-card">
+              <div className="service-icon">{s.icon}</div>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('becane_cart');
@@ -652,6 +1034,44 @@ function App() {
   useEffect(() => {
     localStorage.setItem('becane_cart', JSON.stringify(cartItems));
   }, [cartItems]);
+
+  const [wishlist, setWishlist] = useState(() => {
+    const saved = localStorage.getItem('becane_wishlist');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('becane_wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem('becane_orders');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Listen for localstorage changes to update orders in real-time if needed, 
+  // but mostly we just need it on mount or when checkout completes.
+  // Actually, handleFinalSubmit in Checkout updates localStorage directly. 
+  // We can force a refresh or pass a handler. 
+  // For simplicity, let's read distinct from App state or validly update it.
+  // A better way is to pass `onCheckoutSuccess` to Checkout.
+
+  const refreshOrders = () => {
+    const saved = localStorage.getItem('becane_orders');
+    if (saved) setOrders(JSON.parse(saved));
+  };
+
+  const toggleWishlist = (product) => {
+    setWishlist(prev => {
+      const exists = prev.find(p => p.id === product.id);
+      if (exists) {
+        setToast({ message: 'Removed from wishlist.', isVisible: true });
+        return prev.filter(p => p.id !== product.id);
+      }
+      setToast({ message: 'Added to wishlist.', isVisible: true });
+      return [...prev, product];
+    });
+  };
 
   const addToCart = (product) => {
     setCartItems(prevItems => {
@@ -698,14 +1118,18 @@ function App() {
         />
         <main>
           <Routes>
-            <Route path="/" element={<Home searchResults={searchResults} />} />
+            <Route path="/" element={<Home searchResults={searchResults} toggleWishlist={toggleWishlist} wishlist={wishlist} />} />
             <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
-            <Route path="/checkout" element={<Checkout cartItems={cartItems} clearCart={clearCart} />} />
+            <Route path="/checkout" element={<Checkout cartItems={cartItems} clearCart={clearCart} onOrderPlaced={refreshOrders} />} />
             <Route path="/shipping" element={<Shipping />} />
             <Route path="/returns" element={<Returns />} />
             <Route path="/size-guide" element={<SizeGuide />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/wishlist" element={<Wishlist items={wishlist} onRemove={id => toggleWishlist({ id })} />} />
+            <Route path="/orders" element={<MyOrders orders={orders} />} />
           </Routes>
         </main>
+        <NewsletterPopup />
         <Footer />
         <CartDrawer
           isOpen={isCartOpen}
