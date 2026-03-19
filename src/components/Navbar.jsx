@@ -24,7 +24,7 @@ function Navbar({ cartCount, onOpenCart, onSearch }) {
   return (
     <nav className="navbar fade-in">
       <div className="nav-left">
-        <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} style={{ position: 'relative', zIndex: 1001 }}>
           <div className={`hamburger ${isMenuOpen ? 'open' : ''}`}><span></span></div>
         </button>
         <Link to="/" className="brand-link" onClick={() => setIsMenuOpen(false)}>
@@ -36,6 +36,8 @@ function Navbar({ cartCount, onOpenCart, onSearch }) {
         <span className="nav-link" onClick={() => handleNav('#collection')}>Collection</span>
         <span className="nav-link" onClick={() => handleNav('#stories')}>Stories</span>
         <Link to="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>Atelier</Link>
+        <Link to="/wishlist" className="nav-link mobile-only" onClick={() => setIsMenuOpen(false)}>Wishlist</Link>
+        <Link to="/orders" className="nav-link mobile-only" onClick={() => setIsMenuOpen(false)}>Orders</Link>
       </div>
 
       <div className="nav-actions">
@@ -56,8 +58,8 @@ function Navbar({ cartCount, onOpenCart, onSearch }) {
         <div className="nav-link cart-trigger" onClick={onOpenCart}>
           Cart ({cartCount})
         </div>
-        <Link to="/wishlist" className="nav-link" style={{ fontSize: '1.2rem', lineHeight: 1 }}>♡</Link>
-        <Link to="/orders" className="nav-link" style={{ fontSize: '1.2rem', lineHeight: 1 }}>📦</Link>
+        <Link to="/wishlist" className="nav-link desktop-only" style={{ fontSize: '1.2rem', lineHeight: 1 }}>♡</Link>
+        <Link to="/orders" className="nav-link desktop-only" style={{ fontSize: '1.2rem', lineHeight: 1 }}>📦</Link>
       </div>
     </nav>
   );

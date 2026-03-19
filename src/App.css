@@ -161,6 +161,13 @@ main {
   margin-right: 0.5rem;
 }
 
+@media (max-width: 768px) {
+  .search-container.open input {
+    width: 140px; /* smaller width for mobile */
+  }
+}
+
+
 .search-trigger {
   background: none;
   border: none;
@@ -1036,11 +1043,19 @@ main {
   }
 
   .hero-title {
-    font-size: 3rem;
+    font-size: 2.5rem;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
   }
 
   .hero {
-    padding: 0 2rem;
+    padding: 0 1.5rem;
   }
 
   .detail-container {
@@ -1068,6 +1083,52 @@ main {
 
   .filter-bar {
     gap: 1rem;
+  }
+  
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .product-info {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .product-name {
+    font-size: 0.8rem;
+  }
+  
+  .product-price {
+    font-size: 0.9rem;
+  }
+  
+  .product-detail {
+    padding: 6rem 1rem;
+  }
+  
+  .footer-content {
+    gap: 2rem;
+  }
+  
+  .usp-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .usp-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .usp-title {
+    font-size: 0.85rem;
+  }
+  
+  .usp-desc {
+    font-size: 0.75rem;
   }
 }
 /* Info Modal */
