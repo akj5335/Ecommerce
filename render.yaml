@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: becane-ecommerce-api
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        fromConfig: MONGODB_URI
+      - key: JWT_SECRET
+        fromConfig: JWT_SECRET
+      - key: FRONTEND_URL
+        fromConfig: FRONTEND_URL
