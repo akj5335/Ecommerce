@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from './Logo';
 
-function Navbar({ cartCount, onOpenCart, onSearch }) {
+function Navbar({ cartCount, onOpenCart, onSearch, userInfo }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -38,6 +38,11 @@ function Navbar({ cartCount, onOpenCart, onSearch }) {
         <Link to="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>Atelier</Link>
         <Link to="/wishlist" className="nav-link mobile-only" onClick={() => setIsMenuOpen(false)}>Wishlist</Link>
         <Link to="/orders" className="nav-link mobile-only" onClick={() => setIsMenuOpen(false)}>Orders</Link>
+        {userInfo ? (
+          <Link to="/profile" className="nav-link mobile-only" onClick={() => setIsMenuOpen(false)}>Profile</Link>
+        ) : (
+          <Link to="/login" className="nav-link mobile-only" onClick={() => setIsMenuOpen(false)}>Login</Link>
+        )}
       </div>
 
       <div className="nav-actions">
@@ -60,6 +65,11 @@ function Navbar({ cartCount, onOpenCart, onSearch }) {
         </div>
         <Link to="/wishlist" className="nav-link desktop-only" style={{ fontSize: '1.2rem', lineHeight: 1 }}>♡</Link>
         <Link to="/orders" className="nav-link desktop-only" style={{ fontSize: '1.2rem', lineHeight: 1 }}>📦</Link>
+        {userInfo ? (
+          <Link to="/profile" className="nav-link desktop-only" style={{ fontSize: '1rem', lineHeight: 1, marginLeft: '0.5rem', fontWeight: 600 }}>{userInfo.name.split(' ')[0]}</Link>
+        ) : (
+          <Link to="/login" className="nav-link desktop-only" style={{ fontSize: '1rem', lineHeight: 1, marginLeft: '0.5rem', fontWeight: 600 }}>Login</Link>
+        )}
       </div>
     </nav>
   );

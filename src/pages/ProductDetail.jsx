@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { products } from '../data/products';
 import { TrustBadges } from '../components/USPSection';
 import { ProductImage } from '../components/Common';
 
@@ -31,7 +30,7 @@ function ProductReviews() {
   );
 }
 
-function RelatedProducts({ currentCategory, currentId }) {
+function RelatedProducts({ products = [], currentCategory, currentId }) {
   const related = products
     .filter(p => p.category !== currentCategory && p.id !== currentId) // Suggest different categories
     .slice(0, 3); // Take top 3
@@ -61,11 +60,29 @@ function RelatedProducts({ currentCategory, currentId }) {
   );
 }
 
-function ProductDetail({ onAddToCart }) {
+function ProductDetail({ products = [], onAddToCart, userInfo }) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const product = products.find(p => p.id === parseInt(id));
   const [selectedSize, setSelectedSize] = useState('S');
   const [quantity, setQuantity] = useState(1);
+
+  const handleOrderNow = () => {
+    onAddToCart({ ...product, size: selectedSize, quantity });
+    if (userInfo) {
+      navigate('/checkout');
+    } else {
+      navigate('/login');
+    }
+  };
+
+  if (products.length === 0) {
+    return (
+      <div className="section container" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   if (!product) return <div className="section container">Product not found.</div>;
 
@@ -110,17 +127,27 @@ function ProductDetail({ onAddToCart }) {
               </div>
             </div>
           </div>
-          <button
-            className="btn-add-to-cart"
-            onClick={() => onAddToCart({ ...product, size: selectedSize, quantity })}
-          >
-            Add to Cart
-          </button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button
+              className="btn-add-to-cart"
+              onClick={() => onAddToCart({ ...product, size: selectedSize, quantity })}
+              style={{ flex: 1 }}
+            >
+              Add to Cart
+            </button>
+            <button
+              className="btn-add-to-cart"
+              onClick={handleOrderNow}
+              style={{ flex: 1, backgroundColor: '#111', color: '#fff' }}
+            >
+              Order Now
+            </button>
+          </div>
           <TrustBadges />
         </div>
       </div>
       <div className="container" style={{ marginTop: '6rem', paddingTop: '4rem', borderTop: '1px solid #eee' }}>
-        <RelatedProducts currentCategory={product.category} currentId={product.id} />
+        <RelatedProducts products={products} currentCategory={product.category} currentId={product.id} />
         <div style={{ margin: '4rem 0', borderTop: '1px solid #eee' }}></div>
         <ProductReviews />
       </div>

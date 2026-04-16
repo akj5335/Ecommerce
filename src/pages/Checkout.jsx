@@ -53,23 +53,47 @@ function Checkout({ cartItems, clearCart, onOrderPlaced }) {
     }
 
     setStep(3); // Processing
-    setTimeout(() => {
-      const newOrder = {
-        id: Math.floor(100000 + Math.random() * 900000),
-        date: new Date().toISOString(),
-        items: cartItems,
-        total: total,
-        customer: formData
-      };
+    
+    setTimeout(async () => {
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: cartItems,
+            total,
+            shippingDetails: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              address: formData.address,
+              city: formData.city,
+              zip: formData.zip,
+            }
+          })
+        });
 
-      const existingOrders = JSON.parse(localStorage.getItem('becane_orders') || '[]');
-      localStorage.setItem('becane_orders', JSON.stringify([newOrder, ...existingOrders]));
+        if (!response.ok) {
+          throw new Error('Order submission failed');
+        }
 
-      if (onOrderPlaced) onOrderPlaced();
-      clearCart();
-      setStep(4); // Success
-      window.scrollTo(0, 0);
-    }, 2500);
+        const newOrder = await response.json();
+
+        const existingOrders = JSON.parse(localStorage.getItem('becane_orders') || '[]');
+        localStorage.setItem('becane_orders', JSON.stringify([newOrder, ...existingOrders]));
+
+        if (onOrderPlaced) onOrderPlaced();
+        clearCart();
+        setStep(4); // Success
+        window.scrollTo(0, 0);
+      } catch (error) {
+        console.error(error);
+        setErrors({ payment: 'Order submission failed, please try again.' });
+        setStep(2);
+      }
+    }, 1500);
   };
 
   const handleChange = (e) => {

@@ -1,13 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function CartDrawer({ isOpen, onClose, cartItems, onRemove, onUpdateQuantity }) {
+function CartDrawer({ isOpen, onClose, cartItems, onRemove, onUpdateQuantity, userInfo }) {
   const total = cartItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
   const navigate = useNavigate();
 
   const handleCheckout = () => {
     onClose();
-    navigate('/checkout');
+    if (userInfo) {
+      navigate('/checkout');
+    } else {
+      navigate('/login');
+    }
   };
 
   return (

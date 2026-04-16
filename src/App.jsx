@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
-// Data
-import { products } from './data/products';
-
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -17,9 +14,17 @@ import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
 import Wishlist from './pages/Wishlist';
 import MyOrders from './pages/MyOrders';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
 import { Shipping, Returns, SizeGuide, Services } from './pages/InfoPages';
 
 function App() {
+  const [userInfo, setUserInfo] = useState(() => {
+    const savedUser = localStorage.getItem('becane_userInfo');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('becane_cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -27,6 +32,19 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [toast, setToast] = useState({ message: '', isVisible: false });
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Failed to fetch products', error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('becane_cart', JSON.stringify(cartItems));
@@ -105,18 +123,22 @@ function App() {
             );
             setSearchResults(query.trim() === '' ? [] : results);
           }}
+          userInfo={userInfo}
         />
         <main>
           <Routes>
-            <Route path="/" element={<Home searchResults={searchResults} toggleWishlist={toggleWishlist} wishlist={wishlist} />} />
-            <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
-            <Route path="/checkout" element={<Checkout cartItems={cartItems} clearCart={clearCart} onOrderPlaced={refreshOrders} />} />
+            <Route path="/" element={<Home products={products} searchResults={searchResults} toggleWishlist={toggleWishlist} wishlist={wishlist} />} />
+            <Route path="/product/:id" element={<ProductDetail products={products} onAddToCart={addToCart} userInfo={userInfo} />} />
+            <Route path="/checkout" element={<Checkout cartItems={cartItems} clearCart={clearCart} onOrderPlaced={refreshOrders} userInfo={userInfo} />} />
             <Route path="/shipping" element={<Shipping />} />
             <Route path="/returns" element={<Returns />} />
             <Route path="/size-guide" element={<SizeGuide />} />
             <Route path="/services" element={<Services />} />
             <Route path="/wishlist" element={<Wishlist items={wishlist} onRemove={id => toggleWishlist({ id })} />} />
             <Route path="/orders" element={<MyOrders orders={orders} />} />
+            <Route path="/login" element={<Login setUserInfo={setUserInfo} />} />
+            <Route path="/register" element={<Register setUserInfo={setUserInfo} />} />
+            <Route path="/profile" element={<Profile userInfo={userInfo} setUserInfo={setUserInfo} />} />
           </Routes>
         </main>
         <NewsletterPopup />
@@ -126,6 +148,7 @@ function App() {
           onClose={() => setIsCartOpen(false)}
           cartItems={cartItems}
           onRemove={removeFromCart}
+          userInfo={userInfo}
           onUpdateQuantity={(index, newQuantity) => {
             if (newQuantity < 1) {
               removeFromCart(index);

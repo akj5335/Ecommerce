@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { products } from '../data/products';
 import { ProductImage, Skeleton } from '../components/Common';
 import { USPSection } from '../components/USPSection';
 
-function Home({ searchResults, toggleWishlist, wishlist }) {
+function Home({ products = [], searchResults, toggleWishlist, wishlist }) {
   const [filter, setFilter] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const categories = ['All', ...new Set(products.map(p => p.category))];
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (products.length > 0) {
+      setIsLoading(false);
+    }
+  }, [products]);
 
   const getFilteredProducts = () => {
     let items = products;
-    if (searchResults.length > 0) {
+    if (searchResults && searchResults.length > 0) {
       items = searchResults;
     }
     if (filter !== 'All') {
