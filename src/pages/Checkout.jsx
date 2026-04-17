@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 const initialFormState = {
   firstName: '', lastName: '', email: '', address: '', city: '', zip: '',
   cardNumber: '', expiry: '', cvc: ''
 };
 
-function Checkout({ cartItems, clearCart, onOrderPlaced }) {
+function Checkout({ cartItems, clearCart, onOrderPlaced, userInfo }) {
   const total = cartItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
   const [step, setStep] = useState(1); // 1=Shipping, 2=Payment, 3=Processing, 4=Success
   const [formData, setFormData] = useState(initialFormState);
@@ -56,30 +57,28 @@ function Checkout({ cartItems, clearCart, onOrderPlaced }) {
     
     setTimeout(async () => {
       try {
-        const response = await fetch('/api/orders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const orderNumber = 'ORD-' + Math.random().toString().slice(2, 11).toUpperCase();
+        
+        const { data: newOrder, error } = await supabase
+          .from('orders')
+          .insert({
+            order_number: orderNumber,
             items: cartItems,
             total,
-            shippingDetails: {
+            shipping_details: {
               firstName: formData.firstName,
               lastName: formData.lastName,
               email: formData.email,
               address: formData.address,
               city: formData.city,
               zip: formData.zip,
-            }
+            },
+            user_id: userInfo?.id || null
           })
-        });
+          .select()
+          .single();
 
-        if (!response.ok) {
-          throw new Error('Order submission failed');
-        }
-
-        const newOrder = await response.json();
+        if (error) throw error;
 
         const existingOrders = JSON.parse(localStorage.getItem('becane_orders') || '[]');
         localStorage.setItem('becane_orders', JSON.stringify([newOrder, ...existingOrders]));
@@ -90,7 +89,7 @@ function Checkout({ cartItems, clearCart, onOrderPlaced }) {
         window.scrollTo(0, 0);
       } catch (error) {
         console.error(error);
-        setErrors({ payment: 'Order submission failed, please try again.' });
+        setErrors({ payment: error.message || 'Order submission failed, please try again.' });
         setStep(2);
       }
     }, 1500);

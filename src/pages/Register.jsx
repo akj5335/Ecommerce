@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
+import { supabase } from '../supabaseClient';
+
 function Register({ setUserInfo }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,23 +24,24 @@ function Register({ setUserInfo }) {
     setError('');
     
     try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+        },
       });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (response.ok) {
-        localStorage.setItem('becane_userInfo', JSON.stringify(data));
-        setUserInfo(data);
+      if (data.user) {
+        setUserInfo(data.user);
         navigate('/');
-      } else {
-        setError(data.message || 'Registration failed');
       }
     } catch (err) {
-      setError('Server Error. Please try again later.');
+      setError(err.message || 'Registration failed');
     }
     setLoading(false);
   };

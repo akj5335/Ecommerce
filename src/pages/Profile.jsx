@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
+import { supabase } from '../supabaseClient';
+
 function Profile({ userInfo, setUserInfo }) {
   const navigate = useNavigate();
 
@@ -11,11 +13,12 @@ function Profile({ userInfo, setUserInfo }) {
     }
   }, [userInfo, navigate]);
 
-  const logoutHandler = () => {
-    localStorage.removeItem('becane_userInfo');
-    setUserInfo(null);
+  const logoutHandler = async () => {
+    await supabase.auth.signOut();
     navigate('/login');
   };
+
+  const name = userInfo?.user_metadata?.name || userInfo?.name;
 
   if (!userInfo) return null;
 
@@ -28,9 +31,9 @@ function Profile({ userInfo, setUserInfo }) {
         <div className="checkout-summary-side" style={{ flex: 1, backgroundColor: '#faf9f5', border: '1px solid #eee', padding: '3rem' }}>
           <h1 className="detail-title">My Profile</h1>
           <div style={{ marginTop: '2rem' }}>
-            <p><strong>Name:</strong> {userInfo.name}</p>
+            <p><strong>Name:</strong> {name}</p>
             <p><strong>Email:</strong> {userInfo.email}</p>
-            {userInfo.isAdmin && <p><strong>Status:</strong> Administrator</p>}
+            {userInfo.app_metadata?.is_admin && <p><strong>Status:</strong> Administrator</p>}
           </div>
           <button 
             className="btn-discover dark-btn" 

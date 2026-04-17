@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import { ScrollToTop, Toast, NewsletterPopup } from './components/Common';
+import { supabase } from './supabaseClient';
 
 // Pages
 import Home from './pages/Home';
@@ -34,11 +35,24 @@ function App() {
   const [toast, setToast] = useState({ message: '', isVisible: false });
 
   useEffect(() => {
+    // Get session from Supabase
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserInfo(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserInfo(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/products');
-        const data = await response.json();
-        setProducts(Array.isArray(data) ? data : []);
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) throw error;
+        setProducts(data || []);
       } catch (error) {
         console.error('Failed to fetch products', error);
       }

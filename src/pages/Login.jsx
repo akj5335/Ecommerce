@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
+import { supabase } from '../supabaseClient';
+
 function Login({ setUserInfo }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,23 +17,19 @@ function Login({ setUserInfo }) {
     setError('');
     
     try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (response.ok) {
-        localStorage.setItem('becane_userInfo', JSON.stringify(data));
-        setUserInfo(data);
+      if (data.user) {
+        setUserInfo(data.user);
         navigate('/');
-      } else {
-        setError(data.message || 'Invalid email or password');
       }
     } catch (err) {
-      setError('Server Error. Please try again later.');
+      setError(err.message || 'Invalid email or password');
     }
     setLoading(false);
   };
